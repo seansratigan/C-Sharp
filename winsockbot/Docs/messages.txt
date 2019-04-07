@@ -1,0 +1,22 @@
+\r\n for END OF LINE (2 Characters)
+
+CONNECTED
+:test.environment.server 001 Boopewt :Welcome to the LearnIT IRC Network Boopewt!
+
+INCLUDES CLIENTS HOSTNAME
+:test.environment.server 002 Boopewt :Your host is test.environment.server, running version UnrealIRCd-4.2.2
+
+CHAN LIMIT
+:test.environment.server 005 Boopewt AWAYLEN=307 CASEMAPPING=ascii CHANLIMIT=#:10 
+
+USER PING
+:sean!cppork@netadmin.environment.server PRIVMSG Boopewt :PING 1554006700
+
+SERVER PING
+PING :test.environment.server
+
+
++		ping	"PONG !cppork@netadmin.environment.server PRIVMSG Boopewt :\x1PING 1554025095\x1\r\n"	std::basic_string<char,std::char_traits<char>,std::allocator<char> >
+
+
+1 2 3 4 5 6 7 8 9 10

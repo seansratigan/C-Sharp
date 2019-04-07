@@ -1,0 +1,83 @@
+Finished (and may need work)
+- getNick()
+- getUser()
+- getHost()
+
+TODO:
+getMsgType()
+isChannel()
+getMessage()
+
+What we can recieve.
+
+
+I have seperated the 3 buffer lines to 3 seperate strings.
+(These strings will all end with "\r\n")
+
+The parser should loop through every string (line) and pull:
+NICK, USER, @HOST, MSGType, IS_CHANNEL, MESSAGE
+
+These will be extracted using seperate functions.
+- getNick / getUser / getHost / getMsgType / getChan / getMessage
+
+Every funtion call will take the full string as an argument
+
+Parsing nick:
+starting pos = ":" + 1 (we dont want to copy the ":")
+ending pos = "!" (e.g. "NICK" is the nick.)
+> :NICK!
+  012345
+   ^
+
+Parsing user:
+starting pos = "!" +1 (We dont want to copy the "!")
+ending pos = "@"
+
+Parsing host:
+starting pos = "@"
+ending pos = "ws" (ws is a space stored as str "\x20")
+
+Parsing MsgType:
+starting pos = nth(1) ws
+ending pos = nth(2) ws
+
+Parsing getChan:
+
+
+Reference:
+
+
+
+:sean!cppork@LRNIT-771ADE8C NOTICE Boopewt :msg example
+
+
+:nick!user@host PRIVMSG Boopewt :this is a privmsg to the user
+:sean!cppork@LRNIT-771ADE8C NOTICE Boopewt :this is a notice to the user
+
+:sean!cppork@LRNIT-771ADE8C PRIVMSG #dev :this is a message to a channel
+:sean!cppork@LRNIT-771ADE8C NOTICE #dev :this is a notice to a channel
+
+:sean!cppork@LRNIT-771ADE8C MODE #dev +o Boopewt
+nick user host MSGType is_channel 
+:sean!cppork@LRNIT-771ADE8C MODE #dev +v Boopewt
+:sean!cppork@LRNIT-771ADE8C TOPIC #dev :new topic
+:sean!cppork@LRNIT-771ADE8C KICK #dev Boopewt :sean
+:sean!cppork@LRNIT-771ADE8C PART #dev
+:sean!cppork@LRNIT-771ADE8C JOIN :#dev
+
+A ping from the server will only start with PING and contain the data.
+PING :DATA_TO_BE_COPIED
+
+
+| RPL Codes	       | Message	
+RPL_WELCOME ->		:SERVER 001 NICK :Message NICK!user@host
+RPL_LUSEROP ->		:SERVER 252 NICK <int> :operator(s) online
+RPL_LUSERCHANNELS ->	:SERVER 254 NICK <int> :channels formed
+RPL_LUSERME ->		:SERVER 255 NICK :I have <int> clients and <int> servers
+RPL_LOCALUSERS ->	:SERVER 265 NICK <int> <int> :Current local users <int>, max <int>
+RPL_GLOBALUSERS ->	:SERVER 266 NICK <int> <int> :Current global users <int>, max <int>
+RPL_NAMEREPLY ->	:test.environment.server 353 NICK = #dev :NICK @NICK
+RPL_ENDOFMOTD ->	:SERVER 376 NICK :End of /MOTD command.
+
+
+Autojoin should be performed upon receipt of RPL_WELCOME.
