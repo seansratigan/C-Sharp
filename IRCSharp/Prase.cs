@@ -2,7 +2,7 @@
 
 namespace IRCSharp
 {
-    class Parse
+    class IRCMessageHandler
     {
 
         public static Int32 FindNth(Int32 n, string s, string message)
@@ -91,6 +91,7 @@ namespace IRCSharp
                     Connection.Send("PRIVMSG #Dev I got a private message from: " + nick);
                     Connection.Send("PRIVMSG #Dev This message was from a channel: " + isChannel);
                 }
+
 
 
                 Console.WriteLine("This string: {0}", message);

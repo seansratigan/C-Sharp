@@ -39,7 +39,7 @@ namespace IRCSharp
 
                 Int32 bytes = iostream.Read(data, 0, data.Length);
                 receiveData = System.Text.Encoding.ASCII.GetString(data, 0, data.Length);
-                Parse.getLines(receiveData);
+                IRCMessageHandler.getLines(receiveData);
                 Array.Clear(data, 0, data.Length);
                 // Close the stream and socket if we get disconnected
                 if (receiveData.Contains("Closing Link"))
