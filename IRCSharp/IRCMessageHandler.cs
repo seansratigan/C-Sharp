@@ -45,7 +45,8 @@ namespace IRCSharp
             string host = string.Empty;
             string msgType = string.Empty;
             string parameters = string.Empty;
-            bool isChannel;
+            bool isChannel = false;
+            string channel = string.Empty;
             Int32 beginPos;
             Int32 endPos;
             Int32 length;
@@ -79,20 +80,29 @@ namespace IRCSharp
                 msgType = message.Substring(0, length);
                 message = message.Remove(0, length + 1);
 
-                // Is this a channel?
+                // Is this a channel? If so, lets set the channel and send a bool telling our next function its a channel
                 if (message.Contains("#") && message.Contains(" ") && message.IndexOf("#") < message.IndexOf(" ", FindNth(1, " ", message)))
                 {
                     isChannel = true;
-                    Connection.Send("PRIVMSG #Dev This message was from a channel: " + isChannel);
+
+                    beginPos = 0;
+                    endPos = message.IndexOf(" ", FindNth(1, " ", message));
+                    length = beginPos + endPos;
+                    channel = message.Substring(0, length);
+                    message = message.Remove(0, length + 1);
                 }
                 else if (!message.Contains("#") && message.IndexOf(Settings.Fetch("Nick")) < message.IndexOf(" ", FindNth(1, " ", message)))
                 {
                     isChannel = false;
+
+                    beginPos = 0;
+                    endPos = message.IndexOf(" ", FindNth(1, " ", message));
+                    length = beginPos + endPos;
+                    message = message.Remove(0, length + 1);
                     Connection.Send("PRIVMSG #Dev I got a private message from: " + nick);
                     Connection.Send("PRIVMSG #Dev This message was from a channel: " + isChannel);
+                    Connection.Send("PRIVMSG #Dev Whats in this message: " + message);
                 }
-
-
 
                 Console.WriteLine("This string: {0}", message);
             }
