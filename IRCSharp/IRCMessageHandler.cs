@@ -44,7 +44,7 @@ namespace IRCSharp
             string user = string.Empty;
             string host = string.Empty;
             string msgType = string.Empty;
-            string parameters = string.Empty;
+            string[] parameter = null;
             bool isChannel = false;
             string channel = string.Empty;
             Int32 beginPos;
@@ -103,6 +103,18 @@ namespace IRCSharp
                     Connection.Send("PRIVMSG #Dev This message was from a channel: " + isChannel);
                     Connection.Send("PRIVMSG #Dev Whats in this message: " + message);
                 }
+               /* int i = 0;
+                while (message.Contains("\r\n"))
+                {
+                    beginPos = 0;
+                    endPos = message.IndexOf(" ", FindNth(1, " ", message));
+                    length = beginPos + endPos;
+                    parameter[i] = message.Substring(0, length + 1);
+                    message.Remove(0, length + 1);
+                    if (message.IndexOf("\r\n") == 1) { message.Remove(0, 2); }
+                    i++;
+                }
+                */
 
                 Console.WriteLine("This string: {0}", message);
             }
