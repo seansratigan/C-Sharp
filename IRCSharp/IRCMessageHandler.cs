@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Linq;
 
 namespace IRCSharp
 {
@@ -24,17 +26,46 @@ namespace IRCSharp
 
         public static void getLines(string message)
         {
+            if (!Settings.isServerName())
+            {
+                Settings.StoreServerName(message.Substring(1, FindNth(1, " ", message)));
+            }
             while (message.IndexOf("\r\n") != -1)
             {
                 Int32 f = message.IndexOf("\r\n");
-                getParameters(message.Substring(0, f + 2));
+                MessageRouter(message.Substring(0, f + 2));
                 message = message.Remove(0, f + 2);
             }
         }
 
-        public static void getParameters(string message)
+        public static void MessageRouter(string message)
         {
-            Console.WriteLine("SERVER: {0}", message);
+            if (message.IndexOf(Settings.FetchServerName(), 0) == 1)
+            {
+                serverMessage(message);
+            }
+            else if (message.Contains("@") && message.Contains("!") && !message.Contains(Settings.Fetch("Nick")))
+            {
+                userMessage(message);
+            }
+            else if (message.Contains("PING ") && message.IndexOf("PING ", 0) < message.IndexOf(" ", FindNth(1, " ", message)))
+            {
+                // PING :unique_string
+                // PONG :unique_string
+                int beginPos = message.IndexOf(":", 0);
+                string subString = message.Remove(0, beginPos);
+                Connection.Send("PONG " + subString);
+                Connection.Send("JOIN #Dev");
+            }
+        }
+
+        public static void serverMessage(string serverMessage)
+        {
+            Console.WriteLine("SERVER: {0}", serverMessage);
+        }
+        public static void userMessage(string message)
+        {
+            Console.WriteLine("USER: {0}", message);
             // Locate Nick, User, Host, Type, and Message Strings
             // Incoming message e.g:
             // :their_nick!user@host.sex.party.com PRIVMSG OUR_NICK :hello my name is, slim anus./r/n
@@ -44,88 +75,38 @@ namespace IRCSharp
             string user = string.Empty;
             string host = string.Empty;
             string msgType = string.Empty;
-            string[] parameter = null;
+            string cr = "\r";
+            string lr = "\n";
+            string sp = "";
+
             bool isChannel = false;
             string channel = string.Empty;
-            Int32 beginPos;
-            Int32 endPos;
-            Int32 length;
-            if (message.IndexOf("!") < message.IndexOf("@") && message.IndexOf("@") < message.IndexOf(" ", FindNth(1, " ", message)))
+
+            if (message.Contains("@") && message.Contains("!") && !message.Contains(Settings.Fetch("Nick")))
             {
-                // Find Nick
-                beginPos = message.IndexOf(":", 0) + 1;
-                endPos = message.IndexOf("!", 0) - 2;
-                length = beginPos + endPos;
-                nick = message.Substring(1, length);
-                message = message.Remove(0, length + 1);
-
-                // Find User
-                beginPos = message.IndexOf("!", 0);
-                endPos = message.IndexOf("@", 0);
-                length = beginPos + endPos;
-                user = message.Substring(beginPos + 1, length - 1);
-                message = message.Remove(beginPos, length);
-
-                // Find Host
-                beginPos = message.IndexOf("@", 0) + 1;
-                endPos = message.IndexOf(" ", FindNth(1, " ", message));
-                length = beginPos + endPos;
-                host = message.Substring(1, length - 2);
-                message = message.Remove(0, length);
-
-                // Find MsgType
-                beginPos = 0;
-                endPos = message.IndexOf(" ", FindNth(1, " ", message));
-                length = beginPos + endPos;
-                msgType = message.Substring(0, length);
-                message = message.Remove(0, length + 1);
-
-                // Is this a channel? If so, lets set the channel and send a bool telling our next function its a channel
-                if (message.Contains("#") && message.Contains(" ") && message.IndexOf("#") < message.IndexOf(" ", FindNth(1, " ", message)))
+                char[] delim = { ':', '!', '@', ':', ' '};
+                string[] msgArray = message.Split(delim);
+                nick = msgArray[1];
+                user = msgArray[2];
+                host = msgArray[3];
+                msgType = msgArray[4];
+                msgArray = msgArray.Where(val => val != nick).ToArray();
+                msgArray = msgArray.Where(val => val != user).ToArray();
+                msgArray = msgArray.Where(val => val != host).ToArray();
+                msgArray = msgArray.Where(val => val != msgType).ToArray();
+                msgArray = msgArray.Where(val => val != cr).ToArray();
+                msgArray = msgArray.Where(val => val != lr).ToArray();
+                msgArray = msgArray.Where(val => val != sp).ToArray();
+                Connection.Send("PRIVMSG #Dev Nick: " + nick);
+                Connection.Send("PRIVMSG #Dev User: " + user);
+                Connection.Send("PRIVMSG #Dev Host: " + host);
+                Connection.Send("PRIVMSG #Dev msgType: " + msgType);
+                Connection.Send("PRIVMSG #Dev Server: " + Settings.FetchServerName()); 
+                Connection.Send("PRIVMSG #dev The user information from message: ");
+                foreach (string element in msgArray)
                 {
-                    isChannel = true;
-
-                    beginPos = 0;
-                    endPos = message.IndexOf(" ", FindNth(1, " ", message));
-                    length = beginPos + endPos;
-                    channel = message.Substring(0, length);
-                    message = message.Remove(0, length + 1);
+                    Connection.Send("PRIVMSG #Dev " + element);
                 }
-                else if (!message.Contains("#") && message.IndexOf(Settings.Fetch("Nick")) < message.IndexOf(" ", FindNth(1, " ", message)))
-                {
-                    isChannel = false;
-
-                    beginPos = 0;
-                    endPos = message.IndexOf(" ", FindNth(1, " ", message));
-                    length = beginPos + endPos;
-                    message = message.Remove(0, length + 1);
-                    Connection.Send("PRIVMSG #Dev I got a private message from: " + nick);
-                    Connection.Send("PRIVMSG #Dev This message was from a channel: " + isChannel);
-                    Connection.Send("PRIVMSG #Dev Whats in this message: " + message);
-                }
-               /* int i = 0;
-                while (message.Contains("\r\n"))
-                {
-                    beginPos = 0;
-                    endPos = message.IndexOf(" ", FindNth(1, " ", message));
-                    length = beginPos + endPos;
-                    parameter[i] = message.Substring(0, length + 1);
-                    message.Remove(0, length + 1);
-                    if (message.IndexOf("\r\n") == 1) { message.Remove(0, 2); }
-                    i++;
-                }
-                */
-
-                Console.WriteLine("This string: {0}", message);
-            }
-            else if (message.Contains("PING ") && message.IndexOf("PING ", 0) < message.IndexOf(" ", FindNth(1, " ", message)))
-            {
-                // PING :unique_string
-                // PONG :unique_string
-                beginPos = message.IndexOf(":", 0);
-                string subString = message.Remove(0, beginPos);
-                Connection.Send("PONG " + subString);
-                Connection.Send("JOIN #Dev");
             }
         }
 

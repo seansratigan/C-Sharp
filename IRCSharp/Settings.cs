@@ -3,12 +3,15 @@
     class Settings
     {
         // User information
-        private static string nick = "Dev";
+        private static string nick = "Poopstick";
         private static string user = "God";
         private static int mode = 0;
         private static string realname = "Packet Delivery Man";
         // Behavior settings
-        private static bool autojoin = false;
+        //private static bool autojoin = false;
+        // Connection
+        private static bool gotServerName = false;
+        private static string serverName = string.Empty;
 
         public static dynamic Fetch(string setting)
         {
@@ -18,6 +21,22 @@
             if (setting == "Realname") { return realname; }
             return null;
         }
+
+        public static bool isServerName()
+        {
+            return gotServerName;
+        }
+
+        public static void StoreServerName(string theServerName)
+        {
+            serverName = theServerName;
+            gotServerName = true;
+        }
+        public static string FetchServerName()
+        {
+            return serverName;
+        }
+
 
         public static dynamic Set(string setting, string value)
         {
